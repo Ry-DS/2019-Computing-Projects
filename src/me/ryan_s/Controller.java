@@ -1,7 +1,9 @@
 package me.ryan_s;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -10,21 +12,22 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.Pane;
+import javafx.util.Duration;
+import org.controlsfx.control.Notifications;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class Controller {
     @FXML private TextField nameField;
@@ -50,7 +53,7 @@ public class Controller {
     @FXML
     public void initialize(){
 
-        CompletableFuture<Void> task = CompletableFuture.runAsync(() -> {
+        CompletableFuture.runAsync(() -> {
             try {
                 readFiles();
             } catch (IOException e) {
@@ -75,14 +78,13 @@ public class Controller {
     }
     @FXML
     public void onConfirmClicked(){
-        Event event=eventBox.getSelectionModel().getSelectedItem();
-
+        Entry entry = createEntry();
         resultArea.setText(format.format(new Date())
-                +"\nName: "+nameField.getText()
-                +"\nGender: "+((RadioButton)gender.getSelectedToggle()).getText()
-                +"\nYear Level: "+ageBox.getSelectionModel().getSelectedItem()
-                +"\nEvent: "+event
-                +"\nResult: "+event.getUnit().read(resultPane.getChildren().get(0))+" "+event.getUnit().getUnitName()
+                + "\nName: " + entry.getName()
+                + "\nGender: " + entry.getGender()
+                + "\nYear Level: " + entry.getYearLevel()
+                + "\nEvent: " + entry.getEvent().getName()
+                + "\nResult: " + entry.getResult() + " " + entry.getEvent().getUnit().getUnitName()
 
         );
     }
@@ -92,16 +94,80 @@ public class Controller {
         !eventBox.getSelectionModel().isEmpty()&&!ageBox.getSelectionModel().isEmpty()&&!eventBox.getSelectionModel().getSelectedItem().
                 getUnit().read(resultPane.getChildren().get(0)).isEmpty()){
             confirmButton.setDisable(false);
+            saveButton.setDisable(false);
 
-        }
-        else confirmButton.setDisable(true);
-        if(resultArea.getText().isEmpty())
+        } else {
+            confirmButton.setDisable(true);
             saveButton.setDisable(true);
-        else saveButton.setDisable(false);
+        }
     }
     @FXML
     public void onSaveClicked(){
-        Toast.makeText(Main.getMainStage(),"Saved under example.txt",3000,500,500);
+        confirmButton.fire();
+        Entry entry = createEntry();
+        String fileName = entry.getName() + "-" + entry.getEvent().getName() + ".txt";
+
+
+        CompletableFuture<Boolean> task = CompletableFuture.supplyAsync(() -> {
+            String dir = System.getProperty("user.dir") + File.separator + "saves";
+            new File(dir).mkdir();
+            File save = new File(dir, fileName);
+            File csv = new File(dir, "total.csv");
+            Set<String> csvContents = new LinkedHashSet<>();
+            try {
+                if (!csv.createNewFile())
+                    csvContents.addAll(Files.readAllLines(Paths.get(csv.getPath())));
+                else {
+                    csvContents.add("Name,Gender,Event,Year Level,Result,Type,Time");
+
+                }
+                csvContents.add(String.join(",", entry.getName(), entry.getGender(), entry.getEvent().getName(), entry.getYearLevel(),
+                        entry.getResult(), entry.getEvent().getUnit().getUnitName(), format.format(entry.getTimeStamp())));
+            } catch (IOException e) {
+                e.printStackTrace();
+                Platform.runLater(() -> Platform.runLater(() -> Notifications.create().title("Error").text("Failed to read CSV on saving: " + fileName).position(Pos.BOTTOM_LEFT)
+                        .hideAfter(Duration.seconds(2)).owner(Main.getMainStage()).showError()));
+                return false;
+            }
+            System.out.println(save.getPath());
+            try {
+
+                if (!save.createNewFile())
+                    Platform.runLater(() -> Platform.runLater(() -> Notifications.create().title("Warning").text("Overwriting file: " + fileName).position(Pos.BOTTOM_LEFT)
+                            .hideAfter(Duration.seconds(2)).owner(Main.getMainStage()).showWarning()));
+                csv.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Platform.runLater(() -> Notifications.create().title("Error").text("Failed to create file: " + e.getMessage()).position(Pos.BOTTOM_LEFT)
+                        .hideAfter(Duration.seconds(2)).owner(Main.getMainStage()).showError());
+
+                return false;
+            }
+
+            try (FileWriter writer = new FileWriter(save); FileWriter csvWriter = new FileWriter(csv)) {
+                writer.write(resultArea.getText());
+                writer.flush();
+                for (String s : csvContents) {
+                    csvWriter.write(s + "\n");
+                }
+                csvWriter.flush();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Platform.runLater(() -> Notifications.create().title("Error").text("Failed to write to file: " + e.getMessage()).position(Pos.BOTTOM_LEFT)
+                        .hideAfter(Duration.seconds(2)).owner(Main.getMainStage()).showError());
+                return false;
+
+            }
+            return true;
+        });
+        task.thenAccept(result -> {
+            if (result)
+                Platform.runLater(() ->
+                        Notifications.create().title("Success!").text("Saved as: " + fileName).position(Pos.BOTTOM_LEFT)
+                                .hideAfter(Duration.seconds(2)).owner(Main.getMainStage()).showInformation());
+        });
+
+
 
     }
 
@@ -117,9 +183,15 @@ public class Controller {
     }
 
     private void readFiles() throws IOException {
-        agesFile= Files.readAllLines(Paths.get(getClass().getClassLoader().getResource("ages.txt").getPath()));
-        eventsFile=Files.readAllLines(Paths.get(getClass().getClassLoader().getResource("events.txt").getPath()));
+        String dir = System.getProperty("user.dir");
+        agesFile = Files.readAllLines(Paths.get(dir, "ages.txt"));
+        eventsFile = Files.readAllLines(Paths.get(dir, "events.txt"));
 
+    }
+
+    private Entry createEntry() {
+        return new Entry(nameField.getText(), ((RadioButton) gender.getSelectedToggle()).getText(), eventBox.getSelectionModel().getSelectedItem(),
+                ageBox.getSelectionModel().getSelectedItem(), eventBox.getSelectionModel().getSelectedItem().getUnit().read(resultPane.getChildren().get(0)));
     }
 
 }
