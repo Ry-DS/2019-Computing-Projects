@@ -118,11 +118,11 @@ public class Controller {
                 if (!csv.createNewFile())
                     csvContents.addAll(Files.readAllLines(Paths.get(csv.getPath())));
                 else {
-                    csvContents.add("Name,Gender,Event,Year Level,Result,Type,Time");
+                    csvContents.add("Name,Gender,Event,Year Level,Result,Type,Date,Time");
 
                 }
                 csvContents.add(String.join(",", entry.getName(), entry.getGender(), entry.getEvent().getName(), entry.getYearLevel(),
-                        entry.getResult(), entry.getEvent().getUnit().getUnitName(), format.format(entry.getTimeStamp())));
+                        entry.getResult(), entry.getEvent().getUnit().getUnitName(), format.format(entry.getTimeStamp()).replaceFirst(" ", "")));
             } catch (IOException e) {
                 e.printStackTrace();
                 Platform.runLater(() -> Platform.runLater(() -> Notifications.create().title("Error").text("Failed to read CSV on saving: " + fileName).position(Pos.BOTTOM_LEFT)
