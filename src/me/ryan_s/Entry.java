@@ -7,7 +7,7 @@ import java.util.Date;
  *
  * @author SimplyBallistic
  **/
-public class Entry {
+public class Entry {//a very simple object to just help store everything in the gui the user entered
     private String name;
     private String gender;
     private Event event;

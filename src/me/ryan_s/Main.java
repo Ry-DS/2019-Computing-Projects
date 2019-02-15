@@ -6,6 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+//boilerplate code for a JavaFX application.
+//you can see where the action happens in the Controller Class
 public class Main extends Application {
 
     private static Stage MAIN_STAGE;
