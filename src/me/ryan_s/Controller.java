@@ -64,7 +64,6 @@ public class Controller {
 
     @FXML
     public void initialize() {//This is run by JavaFX when the application starts
-
         CompletableFuture.runAsync(() -> {//We use a completable future which runs tasks async (separate from the main ui thread) so nothing freezes as the gui loads
             try {
                 readFiles();//we try to load the files
@@ -217,6 +216,7 @@ public class Controller {
         String dir = System.getProperty("user.dir");//represents the main folder the program is running in
         agesFile = Files.readAllLines(Paths.get(dir, "ages.txt"));//load the file into the ages list
         eventsFile = Files.readAllLines(Paths.get(dir, "events.txt"));//as above for events
+
 
     }
 
