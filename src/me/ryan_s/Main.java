@@ -17,7 +17,7 @@ public class Main extends Application {
         MAIN_STAGE = primaryStage;
         Parent root = FXMLLoader.load(getClass().getResource("main.fxml"));
         primaryStage.setTitle("Athletics Carnival Event Tracker");
-        primaryStage.setScene(new Scene(root, 640, 400));
+        primaryStage.setScene(new Scene(root, 640, 300));
         primaryStage.show();
     }
 

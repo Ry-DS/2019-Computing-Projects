@@ -5,13 +5,14 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
 
@@ -22,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -38,12 +40,16 @@ public class Controller {
     @FXML private RadioButton femaleButton;
 
     @FXML private ComboBox<Event> eventBox;
-    @FXML private ComboBox<String> ageBox;
+    @FXML
+    private ChoiceBox<String> ageBox;
+    @FXML
+    private ChoiceBox<String> houseBox;
     @FXML private Label unitLabel;
     @FXML private Button confirmButton;
     @FXML private Button saveButton;
     @FXML private TextArea resultArea;
-    @FXML private Pane resultPane;
+    @FXML
+    private GridPane resultPane;
     //this is where we begin the variables we will use for this application. They don't point to a gui element and instead store the data needed
     //The ages list stores the reading of the ages.txt
     private List<String> agesFile;
@@ -70,19 +76,21 @@ public class Controller {
             }
             loadData();//we made it here without failing? We load the files.
         });
+        //input houses
+        houseBox.setItems(FXCollections.observableArrayList(Arrays.asList("Blackwood", "Cottrell", "Kororoit", "Rothwell")));
         System.out.println("Finished initialise");//not visible to user
 
 
-
     }
-    @FXML
-    public void onEventModify() {//This is run by JavaFX when the eventBox is modified
+
+    public void onEventModify() {
+        //This is run by JavaFX when the eventBox is modified
         Event selected = eventBox.getSelectionModel().getSelectedItem();//we get the selected event
         unitLabel.setText(selected.getUnit().getUnitName());//set the unit text to what the event uses
-        resultPane.getChildren().clear();//clear the result pane from previous uses of the eventBox
+        if (resultPane.getChildren().size() > 1)
+            resultPane.getChildren().remove(1);//clear the result pane from previous uses of the eventBox
         resultPane.getChildren().add(selected.getUnit().getInput().get());//put in the a new node which the event supports
     }
-    @FXML
     public void onConfirmClicked() {//run when confirm button clicked
         Entry entry = createEntry();//we create an entry, which captures all current data in gui
         resultArea.setText(format.format(new Date())//we format a new date, which is current time
@@ -90,22 +98,23 @@ public class Controller {
                 + "\nName: " + entry.getName()
                 + "\nGender: " + entry.getGender()
                 + "\nYear Level: " + entry.getYearLevel()
+                + "\nHouse: " + entry.getHouse()
                 + "\nEvent: " + entry.getEvent().getName()
                 + "\nResult: " + entry.getResult() + " " + entry.getEvent().getUnit().getUnitName()
 
         );
     }
-    @FXML
     public void onGUIAction() {//when the gui is interacted with, used to disable and enable the buttons
         if(!nameField.getText().isEmpty()&&gender.getSelectedToggle()!=null&&
-        !eventBox.getSelectionModel().isEmpty()&&!ageBox.getSelectionModel().isEmpty()&&!eventBox.getSelectionModel().getSelectedItem().
-                getUnit().read(resultPane.getChildren().get(0)).isEmpty()){
+                !eventBox.getSelectionModel().isEmpty() && !ageBox.getSelectionModel().isEmpty() && !houseBox.getSelectionModel().isEmpty() && !eventBox.getSelectionModel().getSelectedItem().
+                getUnit().read(resultPane.getChildren().get(1)).isEmpty()) {
             /*
             if...
             Name field has some text
             one of the genders is selected
             The event selection isn't empty
             The age selection isn't empty
+            The House selection isn't empty
             The custom unit field in the result pane isn't empty
 
             Then we can enable both buttons
@@ -119,7 +128,6 @@ public class Controller {
             saveButton.setDisable(true);
         }
     }
-    @FXML
     public void onSaveClicked() {//on save button click
         confirmButton.fire();//virtually press the confirm button too since we want to fill up the text area
         Entry entry = createEntry();//we grab a snapshot
@@ -136,10 +144,10 @@ public class Controller {
                 if (!csv.createNewFile())//if we failed to create the excel sheet, it exists already
                     csvContents.addAll(Files.readAllLines(Paths.get(csv.getPath())));//so we load it into the set
                 else {
-                    csvContents.add("Name,Gender,Event,Year Level,Result,Type,Date,Time");//else, we jsut created it so we add the header
+                    csvContents.add("Name,Gender,Event,Year Level,House,Result,Type,Date,Time");//else, we jsut created it so we add the header
 
                 }
-                csvContents.add(String.join(",", entry.getName(), entry.getGender(), entry.getEvent().getName(), entry.getYearLevel(),
+                csvContents.add(String.join(",", entry.getName(), entry.getGender(), entry.getEvent().getName(), entry.getYearLevel(), entry.getHouse(),
                         entry.getResult(), entry.getEvent().getUnit().getUnitName(), format.format(entry.getTimeStamp()).replaceFirst(" ", "")));
                 //we then make a new entry into the excel sheet with all the details of the entry
             } catch (IOException e) {//we failed at some point above?
@@ -213,8 +221,8 @@ public class Controller {
     }
 
     private Entry createEntry() {//this is where we create a snapshot of the entered data. Used for saving and for populating the result area.
-        return new Entry(nameField.getText(), ((RadioButton) gender.getSelectedToggle()).getText(), eventBox.getSelectionModel().getSelectedItem(),
-                ageBox.getSelectionModel().getSelectedItem(), eventBox.getSelectionModel().getSelectedItem().getUnit().read(resultPane.getChildren().get(0)));
+        return new Entry(nameField.getText(), ((RadioButton) gender.getSelectedToggle()).getText(), eventBox.getSelectionModel().getSelectedItem(), houseBox.getSelectionModel().getSelectedItem(),
+                ageBox.getSelectionModel().getSelectedItem(), eventBox.getSelectionModel().getSelectedItem().getUnit().read(resultPane.getChildren().get(1)));
         //it simply just reads all fields and makes an object out of it
     }
 
