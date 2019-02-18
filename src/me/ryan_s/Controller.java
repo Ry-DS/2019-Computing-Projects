@@ -12,6 +12,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
@@ -46,7 +47,11 @@ public class Controller {
     private ChoiceBox<String> houseBox;
     @FXML private Label unitLabel;
     @FXML private Button confirmButton;
+    @FXML
+    private Label confirmContainer;
     @FXML private Button saveButton;
+    @FXML
+    private Label saveContainer;
     @FXML private TextArea resultArea;
     @FXML
     private GridPane resultPane;
@@ -77,10 +82,17 @@ public class Controller {
         });
         //input houses
         houseBox.setItems(FXCollections.observableArrayList(Arrays.asList("Blackwood", "Cottrell", "Kororoit", "Rothwell")));
+        //add tooltips to show if buttons are disabled, let users know to fill fields
+        Tooltip buttonTip = new Tooltip("Fill out all fields in order to use this button");
+        saveContainer.setTooltip(buttonTip);
+        confirmContainer.setTooltip(buttonTip);
+
+
         System.out.println("Finished initialise");//not visible to user
 
 
     }
+
 
     public void onEventModify() {
         //This is run by JavaFX when the eventBox is modified
@@ -104,21 +116,8 @@ public class Controller {
         );
     }
     public void onGUIAction() {//when the gui is interacted with, used to disable and enable the buttons
-        if(!nameField.getText().isEmpty()&&gender.getSelectedToggle()!=null&&
-                !eventBox.getSelectionModel().isEmpty() && !ageBox.getSelectionModel().isEmpty() && !houseBox.getSelectionModel().isEmpty() && !eventBox.getSelectionModel().getSelectedItem().
-                getUnit().read(resultPane.getChildren().get(1)).isEmpty()) {
-            /*
-            if...
-            Name field has some text
-            one of the genders is selected
-            The event selection isn't empty
-            The age selection isn't empty
-            The House selection isn't empty
-            The custom unit field in the result pane isn't empty
+        if (createEntry() != null) {//if this is not null, all fields are filled
 
-            Then we can enable both buttons
-
-             */
             confirmButton.setDisable(false);
             saveButton.setDisable(false);
 
@@ -221,9 +220,28 @@ public class Controller {
     }
 
     private Entry createEntry() {//this is where we create a snapshot of the entered data. Used for saving and for populating the result area.
-        return new Entry(nameField.getText(), ((RadioButton) gender.getSelectedToggle()).getText(), eventBox.getSelectionModel().getSelectedItem(), houseBox.getSelectionModel().getSelectedItem(),
-                ageBox.getSelectionModel().getSelectedItem(), eventBox.getSelectionModel().getSelectedItem().getUnit().read(resultPane.getChildren().get(1)));
-        //it simply just reads all fields and makes an object out of it
+
+        if (!nameField.getText().isEmpty() && gender.getSelectedToggle() != null &&
+                !eventBox.getSelectionModel().isEmpty() && !ageBox.getSelectionModel().isEmpty() && !houseBox.getSelectionModel().isEmpty() && !eventBox.getSelectionModel().getSelectedItem().
+                getUnit().read(resultPane.getChildren().get(1)).isEmpty()) {
+/*
+            if...
+            Name field has some text
+            one of the genders is selected
+            The event selection isn't empty
+            The age selection isn't empty
+            The House selection isn't empty
+            The custom unit field in the result pane isn't empty
+
+            Then we can enable both buttons
+
+             */
+
+            return new Entry(nameField.getText(), ((RadioButton) gender.getSelectedToggle()).getText(), eventBox.getSelectionModel().getSelectedItem(), houseBox.getSelectionModel().getSelectedItem(),
+                    ageBox.getSelectionModel().getSelectedItem(), eventBox.getSelectionModel().getSelectedItem().getUnit().read(resultPane.getChildren().get(1)));
+            //it simply just reads all fields and makes an object out of it
+        }
+        return null;//return null if any fields are empty since we can't make an entry with them empty
     }
 
 }

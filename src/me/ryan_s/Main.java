@@ -23,7 +23,7 @@ public class Main extends Application {
         primaryStage.setTitle("Athletics Carnival Event Tracker");
         primaryStage.setScene(new Scene(root, 640, 300));
         primaryStage.setOnCloseRequest(event -> {
-            //make a confirmation dialog
+            //make a confirmation dialog to prevent closing
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Are you sure?");
             alert.setHeaderText("Do you wish to quit?");
