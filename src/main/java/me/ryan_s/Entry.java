@@ -8,13 +8,13 @@ import java.util.Date;
  * @author SimplyBallistic
  **/
 public class Entry {//a very simple object to just help store everything in the gui the user entered
-    private String name;
-    private String gender;
-    private Event event;
-    private String house;
-    private String yearLevel;
-    private String result;
-    private Date timeStamp;
+    private final String name;
+    private final String gender;
+    private final Event event;
+    private final String house;
+    private final String yearLevel;
+    private final String result;
+    private final Date timeStamp;
 
     public Entry(String name, String gender, Event event, String house, String yearLevel, String result) {
         this.name = name;

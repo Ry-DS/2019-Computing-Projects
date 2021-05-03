@@ -9,10 +9,10 @@ import javafx.scene.control.TextInputControl;
 import java.util.function.Supplier;
 
 public enum Unit {//represents a unit an event could be measured by. Currently only Time and Length
-    TIME("seconds", Unit::genericNumberField),LENGTH("meters",Unit::genericNumberField);
+    TIME("seconds", Unit::genericNumberField), LENGTH("meters", Unit::genericNumberField);
 
-    private String unit;
-    private Supplier<Node> input;
+    private final String unit;
+    private final Supplier<Node> input;
 
     Unit(String unit, Supplier<Node> input) {//each unit needs a name and a gui element creator that is able to represent this unit
 

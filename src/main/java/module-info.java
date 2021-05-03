@@ -4,11 +4,11 @@
  * @author SimplyBallistic
  **/module javafx.athletics.carnival {
 
-    requires javafx.graphics;
-    requires javafx.fxml;
     requires javafx.controls;
+    requires javafx.fxml;
     requires controlsfx;
-    opens me.ryan_s;
+    opens me.ryan_s to javafx.fxml;
+    exports me.ryan_s;
 
 
 }
