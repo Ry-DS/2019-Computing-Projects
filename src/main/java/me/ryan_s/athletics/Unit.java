@@ -1,4 +1,4 @@
-package me.ryan_s;
+package me.ryan_s.athletics;
 
 
 import javafx.geometry.Pos;

@@ -1,4 +1,4 @@
-package me.ryan_s;
+package me.ryan_s.athletics;
 
 /**
  * Created by SimplyBallistic on 13/02/2019

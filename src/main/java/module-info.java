@@ -7,8 +7,13 @@
     requires javafx.controls;
     requires javafx.fxml;
     requires controlsfx;
-    opens me.ryan_s to javafx.fxml;
-    exports me.ryan_s;
+    requires com.fasterxml.jackson.dataformat.xml;
+    requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.core;
 
+    opens me.ryan_s.xml to javafx.graphics, javafx.fxml;
+    opens me.ryan_s.athletics to javafx.graphics, javafx.fxml;
+    opens me.ryan_s.movie to javafx.graphics, javafx.fxml;
+    opens me.ryan_s.xml.data to com.fasterxml.jackson.databind, javafx.base;
 
 }
