@@ -1,4 +1,4 @@
-package me.ryan_s;
+package me.ryan_s.athletics;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -61,9 +61,9 @@ public class Controller {
     //The events list stores the reading of the events.txt
     private List<String> eventsFile;
     //Once we read the above list, we parse everything into the below list with some code later shown so we can easily use it
-    private List<Event> events=new ArrayList<>();
+    private List<Event> events = new ArrayList<>();
     //This is used to parse a time specified into a string to show the user and to save into files
-    private SimpleDateFormat format=new SimpleDateFormat();
+    private final SimpleDateFormat format = new SimpleDateFormat();
 
 
 
